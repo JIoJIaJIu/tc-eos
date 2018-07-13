@@ -5,7 +5,7 @@
 
 	MEM_GIG=$(bc <<< "($(sysctl -in hw.memsize) / 1024000000)")
 
-	CPU_SPEED=$(bc <<< "scale=2; ($(sysctl -in hw.cpufrequency) / 10^8) / 10")
+	CPU_SPEED=$(bc <<< "scale=2; ($(sysctl -in hw.cpufrequency) / 10^6) / 10")
 	CPU_CORE=$( sysctl -in machdep.cpu.core_count )
 
 	DISK_INSTALL=$(df -h . | tail -1 | tr -s ' ' | cut -d\  -f1 || cut -d' ' -f1)
@@ -32,13 +32,13 @@
 	fi
 
 	if [ "${OS_MIN}" -lt 12 ]; then
-		echo "You must be running Mac OS 10.12.x or higher to install EOSIO."
+		echo "You must be running Mac OS 10.12.x or higher to install TRAVELCHAIN."
 		echo "Exiting now."
 		exit 1
 	fi
 
 	if [ "${DISK_AVAIL}" -lt "$DISK_MIN" ]; then
-		echo "You must have at least ${DISK_MIN}GB of available storage to install EOSIO."
+		echo "You must have at least ${DISK_MIN}GB of available storage to install TRAVELCHAIN."
 		echo "Exiting now."
 		exit 1
 	fi
@@ -129,13 +129,13 @@
 		DEP=$DEP"python@3 "
 		DISPLAY="${DISPLAY}${COUNT}. Python 3\\n\\t"
 		printf "\\t\\t python3 ${bldred}NOT${txtrst} found.\\n"
-		(( COUNT++ ))
+		(( DCOUNT++ ))
 	else
 		printf "\\t\\t Python3 found\\n"
 	fi
 
 	if [ $COUNT -gt 1 ]; then
-		printf "\\n\\tThe following dependencies are required to install EOSIO.\\n"
+		printf "\\n\\tThe following dependencies are required to install TRAVELCHAIN.\\n"
 		printf "\\n\\t%s\\n\\n" "${DISPLAY}"
 		echo "Do you wish to install these packages?"
 		select yn in "Yes" "No"; do
@@ -221,14 +221,6 @@
 			printf "\\tUnable to install boost 1.67 libraries at this time. 0\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
-		fi
-		if [ -d "$BUILD_DIR" ]; then
-			if ! rm -rf "$BUILD_DIR"
-			then
-			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-			fi
 		fi
 		printf "\\tBoost 1.67.0 successfully installed @ /usr/local.\\n"
 	else
@@ -316,7 +308,7 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.2 --depth 1
+		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
 		then
 			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"

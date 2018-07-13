@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
-# This is the EOSIO automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/EOSIO/eos
+# This is the TRAVELCHAIN automated install script for Linux and Mac OS.
+# This file was downloaded from https://github.com/TravelChain/tc-eos
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/EOSIO/eos/blob/master/LICENSE.txt
+# https://github.com/TravelChain/tc-eos/blob/master/LICENSE.txt
 ##########################################################################
 
 	CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -36,7 +36,7 @@
 		exit 1
 	fi
 	if [ -f "${PWD}/CMakeCache.txt" ]; then
-		printf "\\n\\tPlease remove file %s/CMakeCache.txt before building EOSIO.\\n \\tExiting now.\\n\\n" "${PWD}"
+		printf "\\n\\tPlease remove file %s/CMakeCache.txt before building TRAVELCHAIN.\\n \\tExiting now.\\n\\n" "${PWD}"
 		exit 1
 	fi
 
@@ -52,7 +52,7 @@
 	DISK_MIN=20
 	DOXYGEN=false
 	ENABLE_COVERAGE_TESTING=false
-	CORE_SYMBOL_NAME="SYS"
+	CORE_SYMBOL_NAME="TT"
 	TEMP_DIR="/tmp"
 	TIME_BEGIN=$( date -u +%s )
 	VERSION=1.2
@@ -109,7 +109,7 @@
 
 	if [ ! -d .git ]; then
 		printf "\\n\\tThis build script only works with sources cloned from git\\n"
-		printf "\\tPlease clone a new eos directory with 'git clone https://github.com/EOSIO/eos --recursive'\\n"
+		printf "\\tPlease clone a new eos directory with 'git clone https://github.com/TravelChain/tc-eos --recursive'\\n"
 		printf "\\tSee the wiki for instructions: https://github.com/EOSIO/eos/wiki\\n"
 		exit 1
 	fi
@@ -131,7 +131,7 @@
 	if [ "$ARCH" == "Linux" ]; then
 		
 		if [ ! -e /etc/os-release ]; then
-			printf "\\n\\tEOSIO currently supports Amazon, Centos, Fedora, Mint & Ubuntu Linux only.\\n"
+			printf "\\n\\tTRAVELCHAIN currently supports Amazon, Centos, Fedora, Mint & Ubuntu Linux only.\\n"
 			printf "\\tPlease install on the latest version of one of these Linux distributions.\\n"
 			printf "\\thttps://aws.amazon.com/amazon-linux-ami/\\n"
 			printf "\\thttps://www.centos.org/\\n"
@@ -210,7 +210,7 @@
 
 	. "$FILE"
 
-	printf "\\n\\n>>>>>>>> ALL dependencies sucessfully found or installed . Installing EOSIO\\n\\n"
+	printf "\\n\\n>>>>>>>> ALL dependencies sucessfully found or installed . Installing TRAVELCHAIN\\n\\n"
 	printf ">>>>>>>> CMAKE_BUILD_TYPE=%s\\n" "${CMAKE_BUILD_TYPE}"
 	printf ">>>>>>>> ENABLE_COVERAGE_TESTING=%s\\n" "${ENABLE_COVERAGE_TESTING}"
 	printf ">>>>>>>> DOXYGEN=%s\\n\\n" "${DOXYGEN}"
@@ -238,38 +238,37 @@
 		-DOPENSSL_ROOT_DIR="${OPENSSL_ROOT_DIR}" -DBUILD_MONGO_DB_PLUGIN=true \
 		-DENABLE_COVERAGE_TESTING="${ENABLE_COVERAGE_TESTING}" -DBUILD_DOXYGEN="${DOXYGEN}" ..
 	then
-		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> CMAKE building EOSIO has exited with the above error.\\n\\n"
+		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> CMAKE building TRAVELCHAIN has exited with the above error.\\n\\n"
 		exit -1
 	fi
 
 	if ! make -j"${CPU_CORE}"
 	then
-		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE building EOSIO has exited with the above error.\\n\\n"
+		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE building TRAVELCHAIN has exited with the above error.\\n\\n"
 		exit -1
 	fi
 	
 	TIME_END=$(( $(date -u +%s) - ${TIME_BEGIN} ))
 
-	printf "\n\n${bldred}\t _______  _______  _______ _________ _______\n"
-	printf '\t(  ____ \(  ___  )(  ____ \\\\__   __/(  ___  )\n'
-	printf "\t| (    \/| (   ) || (    \/   ) (   | (   ) |\n"
-	printf "\t| (__    | |   | || (_____    | |   | |   | |\n"
-	printf "\t|  __)   | |   | |(_____  )   | |   | |   | |\n"
-	printf "\t| (      | |   | |      ) |   | |   | |   | |\n"
-	printf "\t| (____/\| (___) |/\____) |___) (___| (___) |\n"
-	printf "\t(_______/(_______)\_______)\_______/(_______)\n${txtrst}"
+	printf "\n\n${bldred}\t\n"
+	printf '\t______   ___   _____                     _____                            _  _____  _             _        \n'
+	printf '\t|  _  \ / _ \ /  __ \                   |_   _|                          | |/  __ \| |           (_)       \n'
+	printf '\t| | | |/ /_\ \| /  \/  ___   _ __ ___     | |   _ __   __ _ __   __  ___ | || /  \/| |__    __ _  _  _ __  \n'
+	printf '\t| | | ||  _  || |     / _ \ |  _   _ \    | |  |  __| / _  |\ \ / / / _ \| || |    |  _ \  / _  || ||  _ \ \n'
+	printf '\t| |/ / | | | || \__/\| (_) || | | | | |   | |  | |   | (_| | \ V / |  __/| || \__/\| | | || (_| || || | | |\n'
+	printf "\t|___/  \_| |_/ \____/ \___/ |_| |_| |_|   \_/  |_|    \__,_|  \_/   \___||_| \____/|_| |_| \__,_||_||_| |_|\n${txtrst}"
 
-	printf "\\n\\tEOSIO has been successfully built. %02d:%02d:%02d\\n\\n" $(($TIME_END/3600)) $(($TIME_END%3600/60)) $(($TIME_END%60))
+
+
+
+	printf "\\n\\tTRAVELCHAIN has been successfully built. %02d:%02d:%02d\\n\\n" $(($TIME_END/3600)) $(($TIME_END%3600/60)) $(($TIME_END%60))
 	printf "\\tTo verify your installation run the following commands:\\n"
 	
 	print_instructions
 
 	printf "\\tFor more information:\\n"
-	printf "\\tEOSIO website: https://eos.io\\n"
-	printf "\\tEOSIO Telegram channel @ https://t.me/EOSProject\\n"
-	printf "\\tEOSIO resources: https://eos.io/resources/\\n"
-	printf "\\tEOSIO Stack Exchange: https://eosio.stackexchange.com\\n"
-	printf "\\tEOSIO wiki: https://github.com/EOSIO/eos/wiki\\n\\n\\n"
+	printf "\\tTRAVELCHAIN website: https://travelchain.io\\n"
+	printf "\\tTRAVELCHAIN Telegram channel @ https://t.me/travelchain\\n"
 				
 	if [ "x${EOSIO_BUILD_PACKAGE}" != "x" ]; then
 	  # Build eos.io package
@@ -277,15 +276,15 @@
 			-DCMAKE_C_COMPILER="${C_COMPILER}" -DWASM_ROOT="${WASM_ROOT}" \
 			-DOPENSSL_ROOT_DIR="${OPENSSL_ROOT_DIR}" -DCMAKE_INSTALL_PREFIX="/usr" ..
 		then
-			printf "\\n\\t>>>>>>>>>>>>>>>>>>>> CMAKE building eos.io package has exited with the above error.\\n\\n"
+			printf "\\n\\t>>>>>>>>>>>>>>>>>>>> CMAKE building TRAVELCHAIN package has exited with the above error.\\n\\n"
 			exit -1
 		fi
 
 		if ! make -j${CPU_CORE} VERBOSE=0 package
 		then
-			printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE building eos.io package has exited with the above error.\\n\\n"
+			printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE building TRAVELCHAIN package has exited with the above error.\\n\\n"
 			exit -1
 		fi
 
-		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> eos.io package has been successfully built.\\n\\n"
+		printf "\\n\\t>>>>>>>>>>>>>>>>>>>> TRAVELCHAIN package has been successfully built.\\n\\n"
 	fi

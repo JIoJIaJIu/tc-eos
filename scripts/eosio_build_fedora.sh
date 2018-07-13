@@ -28,13 +28,13 @@
 	fi
 
 	if [ "${OS_VER}" -lt 25 ]; then
-		printf "\\tYou must be running Fedora 25 or higher to install EOSIO.\\n"
+		printf "\\tYou must be running Fedora 25 or higher to install TRAVELCHAIN.\\n"
 		printf "\\tExiting now.\\n"
 		exit 1;
 	fi
 
 	if [ "${DISK_AVAIL%.*}" -lt "${DISK_MIN}" ]; then
-		printf "\\tYou must have at least %sGB of available storage to install EOSIO.\\n" "${DISK_MIN}"
+		printf "\\tYou must have at least %sGB of available storage to install TRAVELCHAIN.\\n" "${DISK_MIN}"
 		printf "\\tExiting now.\\n"
 		exit 1;
 	fi
@@ -83,7 +83,7 @@
 	done		
 
 	if [ ${COUNT} -gt 1 ]; then
-		printf "\\n\\tThe following dependencies are required to install EOSIO.\\n"
+		printf "\\n\\tThe following dependencies are required to install TRAVELCHAIN.\\n"
 		printf "\\n\\t${DISPLAY}\\n\\n"
 		printf "\\tDo you wish to install these dependencies?\\n"
 		select yn in "Yes" "No"; do
@@ -155,23 +155,6 @@
 		fi
 	fi
 
-	if [ -d "${HOME}/opt/boost_1_67_0" ]; then
-		if ! mv "${HOME}/opt/boost_1_67_0" "$BOOST_ROOT"
-		then
-			printf "\\n\\tUnable to move directory %s/opt/boost_1_67_0 to %s.\\n" "${HOME}" "${BOOST_ROOT}"
-			printf "\\n\\tExiting now.\\n"
-			exit 1
-		fi
-		if [ -d "$BUILD_DIR" ]; then
-			if ! rm -rf "$BUILD_DIR"
-			then
-			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-			fi
-		fi
-	fi
-
 	printf "\\n\\tChecking boost library installation.\\n"
 	BVERSION=$( grep "BOOST_LIB_VERSION" "${BOOST_ROOT}/include/boost/version.hpp" 2>/dev/null \
 	| tail -1 | tr -s ' ' | cut -d\  -f3 | sed 's/[^0-9\._]//gI' )
@@ -231,14 +214,6 @@
 			printf "\\n\\tUnable to remove directory %s/boost_1_67_0. 1\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
-		fi
-		if [ -d "$BUILD_DIR" ]; then
-			if ! rm -rf "$BUILD_DIR"
-			then
-			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
-			printf "\\tExiting now.\\n\\n"
-			exit 1;
-			fi
 		fi
 		printf "\\n\\tBoost 1.67.0 successfully installed at %s/opt/boost_1_67_0.\\n\\n" "${HOME}"
 	else
@@ -309,7 +284,7 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.2 --depth 1
+		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
 		then
 			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"
