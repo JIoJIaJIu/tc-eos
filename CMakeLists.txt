@@ -19,8 +19,8 @@ set( CMAKE_CXX_EXTENSIONS ON )
 set( CXX_STANDARD_REQUIRED ON)
 
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 8)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
 
 set( CLI_CLIENT_EXECUTABLE_NAME cleos )
 set( GUI_CLIENT_EXECUTABLE_NAME eosio )
@@ -192,7 +192,7 @@ endif()
 message( STATUS "Using '${CORE_SYMBOL_NAME}' as CORE symbol name" )
 
 if ("${EOSIO_ROOT_KEY}" STREQUAL "")
-   set(EOSIO_ROOT_KEY "TTT7DTTwswXwYAwrt4Xa21vDAxsiB4SLQEhUozeiLtFigtbQCk7hU")
+   set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
 message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'eosio' account" )

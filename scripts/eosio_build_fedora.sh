@@ -28,13 +28,13 @@
 	fi
 
 	if [ "${OS_VER}" -lt 25 ]; then
-		printf "\\tYou must be running Fedora 25 or higher to install TRAVELCHAIN.\\n"
+		printf "\\tYou must be running Fedora 25 or higher to install EOSIO.\\n"
 		printf "\\tExiting now.\\n"
 		exit 1;
 	fi
 
 	if [ "${DISK_AVAIL%.*}" -lt "${DISK_MIN}" ]; then
-		printf "\\tYou must have at least %sGB of available storage to install TRAVELCHAIN.\\n" "${DISK_MIN}"
+		printf "\\tYou must have at least %sGB of available storage to install EOSIO.\\n" "${DISK_MIN}"
 		printf "\\tExiting now.\\n"
 		exit 1;
 	fi
@@ -83,7 +83,7 @@
 	done		
 
 	if [ ${COUNT} -gt 1 ]; then
-		printf "\\n\\tThe following dependencies are required to install TRAVELCHAIN.\\n"
+		printf "\\n\\tThe following dependencies are required to install EOSIO.\\n"
 		printf "\\n\\t${DISPLAY}\\n\\n"
 		printf "\\tDo you wish to install these dependencies?\\n"
 		select yn in "Yes" "No"; do
@@ -155,6 +155,23 @@
 		fi
 	fi
 
+	if [ -d "${HOME}/opt/boost_1_67_0" ]; then
+		if ! mv "${HOME}/opt/boost_1_67_0" "$BOOST_ROOT"
+		then
+			printf "\\n\\tUnable to move directory %s/opt/boost_1_67_0 to %s.\\n" "${HOME}" "${BOOST_ROOT}"
+			printf "\\n\\tExiting now.\\n"
+			exit 1
+		fi
+		if [ -d "$BUILD_DIR" ]; then
+			if ! rm -rf "$BUILD_DIR"
+			then
+			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+			fi
+		fi
+	fi
+
 	printf "\\n\\tChecking boost library installation.\\n"
 	BVERSION=$( grep "BOOST_LIB_VERSION" "${BOOST_ROOT}/include/boost/version.hpp" 2>/dev/null \
 	| tail -1 | tr -s ' ' | cut -d\  -f3 | sed 's/[^0-9\._]//gI' )
@@ -215,60 +232,105 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
+		if [ -d "$BUILD_DIR" ]; then
+			if ! rm -rf "$BUILD_DIR"
+			then
+			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+			fi
+		fi
 		printf "\\n\\tBoost 1.67.0 successfully installed at %s/opt/boost_1_67_0.\\n\\n" "${HOME}"
 	else
 		printf "\\tBoost 1.67.0 found at %s/opt/boost_1_67_0.\\n" "${HOME}"
 	fi
 
 	printf "\\n\\tChecking MongoDB C++ driver installation.\\n"
-    if [ ! -e "/usr/local/lib/libmongocxx-static.a" ]; then
-		printf "\\n\\tInstalling MongoDB C & C++ drivers.\\n"
+	MONGO_INSTALL=true
+    if [ -e "/usr/local/lib64/libmongocxx-static.a" ]; then
+		MONGO_INSTALL=false
+		if [ ! -f /usr/local/lib64/pkgconfig/libmongocxx-static.pc ]; then
+			MONGO_INSTALL=true
+		else
+			if ! version=$( grep "Version:" /usr/local/lib64/pkgconfig/libmongocxx-static.pc | tr -s ' ' | awk '{print $2}' )
+			then
+				printf "\\tUnable to determine mongodb-cxx-driver version.\\n"
+				printf "\\tExiting now.\\n\\n"
+				exit 1;
+			fi
+			maj=$( echo "${version}" | cut -d'.' -f1 )
+			min=$( echo "${version}" | cut -d'.' -f2 )
+			if [ "${maj}" -gt 3 ]; then
+				MONGO_INSTALL=true
+			elif [ "${maj}" -eq 3 ] && [ "${min}" -lt 3 ]; then
+				MONGO_INSTALL=true
+			fi
+		fi
+	fi
+
+    if [ $MONGO_INSTALL == "true" ]; then
 		if ! cd "${TEMP_DIR}"
 		then
 			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		STATUS=$(curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.9.3/mongo-c-driver-1.9.3.tar.gz)
+		STATUS=$( curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.10.2/mongo-c-driver-1.10.2.tar.gz )
 		if [ "${STATUS}" -ne 200 ]; then
-			rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz" 2>/dev/null
+			if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
+			then
+				printf "\\tUnable to remove file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
+			fi
 			printf "\\tUnable to download MongoDB C driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! tar xf "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
+		if ! tar xf mongo-c-driver-1.10.2.tar.gz
 		then
-			printf "\\tUnable to unarchive file %s/mongo-c-driver-1.9.3.tar.gz.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to unarchive file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
+		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
 		then
-			printf "\\tUnable to remove file %s/mongo-c-driver-1.9.3.tar.gz.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to remove file mongo-c-driver-1.10.2.tar.gz.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! cd "${TEMP_DIR}/mongo-c-driver-1.9.3"
+		if ! cd "${TEMP_DIR}"/mongo-c-driver-1.10.2
 		then
-			printf "\\tUnable to enter directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to cd into directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! ./configure --enable-static --with-libbson=bundled --enable-ssl=openssl --disable-automatic-init-and-cleanup --prefix=/usr/local
+		if ! mkdir cmake-build
 		then
-			printf "\\tConfiguring MongoDB C driver has exited with the errors above.\\n"
+			printf "\\tUnable to create directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! make -j"${JOBS}"
+		if ! cd cmake-build
 		then
-			printf "\\tMakecompiling MongoDB C driver has exited with the above error.\\n"
+			printf "\\tUnable to enter directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_BSON=ON \
+		-DENABLE_SSL=OPENSSL -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_STATIC=ON ..
+		then
+			printf "\\tConfiguring MongoDB C driver has encountered the errors above.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! make -j"${CPU_CORE}"
+		then
+			printf "\\tError compiling MongoDB C driver.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
 		if ! sudo make install
 		then
-			printf "\\tInstalling MongoDB C driver has exited with the above error.\\nMake sure you have sudo privileges.\\n"
+			printf "\\tError installing MongoDB C driver.\\nMake sure you have sudo privileges.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
@@ -278,13 +340,13 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.9.3"
+		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.10.2"
 		then
-			printf "\\tUnable to remove directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to remove directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
+		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.3 --depth 1
 		then
 			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"
@@ -302,9 +364,9 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! sudo make -j"${JOBS}"
+		if ! sudo make -j"${CPU_CORE}"
 		then
-			printf "\\tMaking MongoDB C++ driver has exited with the above errors.\\n"
+			printf "\\tError compiling MongoDB C++ driver.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
@@ -314,21 +376,21 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! cd "${CWD}"
+		if ! cd "${TEMP_DIR}"
 		then
-			printf "\\tUnable to enter directory %s.\\n" "${CWD}"
+			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
 		if ! sudo rm -rf "${TEMP_DIR}/mongo-cxx-driver"
 		then
-			printf "\\tUnable to remove directory %s/mongo-cxx-driver.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to remove directory %s/mongo-cxx-driver.\\n" "${TEMP_DIR}" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		printf "\\n\\tMongo C++ driver successfully installed @ /usr/local/lib.\\n\\n"
+		printf "\\tMongo C++ driver installed at /usr/local/lib64/libmongocxx-static.a.\\n"
 	else
-		printf "\\tMongo C++ driver found  /usr/local/lib.\\n"
+		printf "\\tMongo C++ driver found at /usr/local/lib64/libmongocxx-static.a.\\n"
 	fi
 
 	printf "\\n\\tChecking secp256k1-zkp installation.\\n"

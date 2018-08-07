@@ -5,7 +5,7 @@
 
 	MEM_GIG=$(bc <<< "($(sysctl -in hw.memsize) / 1024000000)")
 
-	CPU_SPEED=$(bc <<< "scale=2; ($(sysctl -in hw.cpufrequency) / 10^6) / 10")
+	CPU_SPEED=$(bc <<< "scale=2; ($(sysctl -in hw.cpufrequency) / 10^8) / 10")
 	CPU_CORE=$( sysctl -in machdep.cpu.core_count )
 
 	DISK_INSTALL=$(df -h . | tail -1 | tr -s ' ' | cut -d\  -f1 || cut -d' ' -f1)
@@ -32,13 +32,13 @@
 	fi
 
 	if [ "${OS_MIN}" -lt 12 ]; then
-		echo "You must be running Mac OS 10.12.x or higher to install TRAVELCHAIN."
+		echo "You must be running Mac OS 10.12.x or higher to install EOSIO."
 		echo "Exiting now."
 		exit 1
 	fi
 
 	if [ "${DISK_AVAIL}" -lt "$DISK_MIN" ]; then
-		echo "You must have at least ${DISK_MIN}GB of available storage to install TRAVELCHAIN."
+		echo "You must have at least ${DISK_MIN}GB of available storage to install EOSIO."
 		echo "Exiting now."
 		exit 1
 	fi
@@ -129,13 +129,13 @@
 		DEP=$DEP"python@3 "
 		DISPLAY="${DISPLAY}${COUNT}. Python 3\\n\\t"
 		printf "\\t\\t python3 ${bldred}NOT${txtrst} found.\\n"
-		(( DCOUNT++ ))
+		(( COUNT++ ))
 	else
 		printf "\\t\\t Python3 found\\n"
 	fi
 
 	if [ $COUNT -gt 1 ]; then
-		printf "\\n\\tThe following dependencies are required to install TRAVELCHAIN.\\n"
+		printf "\\n\\tThe following dependencies are required to install EOSIO.\\n"
 		printf "\\n\\t%s\\n\\n" "${DISPLAY}"
 		echo "Do you wish to install these packages?"
 		select yn in "Yes" "No"; do
@@ -222,13 +222,41 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
+		if [ -d "$BUILD_DIR" ]; then
+			if ! rm -rf "$BUILD_DIR"
+			then
+			printf "\\tUnable to remove directory %s. Please remove this directory and run this script %s again. 0\\n" "$BUILD_DIR" "${BASH_SOURCE[0]}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+			fi
+		fi
 		printf "\\tBoost 1.67.0 successfully installed @ /usr/local.\\n"
 	else
 		printf "\\tBoost 1.67.0 found at /usr/local.\\n"
 	fi
 
 	printf "\\n\\tChecking MongoDB C++ driver installation.\\n"
-    if [ ! -e "/usr/local/lib/libmongocxx-static.a" ]; then
+	MONGO_INSTALL=true
+	
+    if [ -e "/usr/local/lib/libmongocxx-static.a" ]; then
+		MONGO_INSTALL=false
+		if ! version=$( grep "Version:" /usr/local/lib/pkgconfig/libmongocxx-static.pc | tr -s ' ' | awk '{print $2}' )
+		then
+			printf "\\tUnable to determine mongodb-cxx-driver version.\\n"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		
+		maj=$( echo "${version}" | cut -d'.' -f1 )
+		min=$( echo "${version}" | cut -d'.' -f2 )
+		if [ "${maj}" -gt 3 ]; then
+			MONGO_INSTALL=true
+		elif [ "${maj}" -eq 3 ] && [ "${min}" -lt 3 ]; then
+			MONGO_INSTALL=true
+		fi
+	fi
+
+    if [ $MONGO_INSTALL == "true" ]; then
 		if ! cd "${TEMP_DIR}"
 		then
 			printf "\\tUnable to enter directory %s.\\n" "${TEMP_DIR}"
@@ -250,35 +278,48 @@
 				exit 1;
 			fi
 		fi
-		STATUS=$(curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.9.3/mongo-c-driver-1.9.3.tar.gz)
+		STATUS=$( curl -LO -w '%{http_code}' --connect-timeout 30 https://github.com/mongodb/mongo-c-driver/releases/download/1.10.2/mongo-c-driver-1.10.2.tar.gz )
 		if [ "${STATUS}" -ne 200 ]; then
-			if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
+			if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
 			then
-				printf "\\tUnable to remove file %s/mongo-c-driver-1.9.3.tar.gz.\\n" "${TEMP_DIR}"
+				printf "\\tUnable to remove file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
 			fi
 			printf "\\tUnable to download MongoDB C driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! tar xf mongo-c-driver-1.9.3.tar.gz
+		if ! tar xf mongo-c-driver-1.10.2.tar.gz
 		then
-			printf "\\tUnable to unarchive file mongo-c-driver-1.9.3.tar.gz.\\n"
+			printf "\\tUnable to unarchive file %s/mongo-c-driver-1.10.2.tar.gz.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.9.3.tar.gz"
+		if ! rm -f "${TEMP_DIR}/mongo-c-driver-1.10.2.tar.gz"
 		then
-			printf "\\tUnable to remove file mongo-c-driver-1.9.3.tar.gz.\\n"
+			printf "\\tUnable to remove file mongo-c-driver-1.10.2.tar.gz.\\n"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! cd mongo-c-driver-1.9.3
+		if ! cd "${TEMP_DIR}"/mongo-c-driver-1.10.2
 		then
-			printf "\\tUnable to cd into directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to cd into directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! ./configure --enable-static --with-libbson=bundled --enable-ssl=darwin --disable-automatic-init-and-cleanup --prefix=/usr/local
+		if ! mkdir cmake-build
+		then
+			printf "\\tUnable to create directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cd cmake-build
+		then
+			printf "\\tUnable to enter directory %s/mongo-c-driver-1.10.2/cmake-build.\\n" "${TEMP_DIR}"
+			printf "\\tExiting now.\\n\\n"
+			exit 1;
+		fi
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_BSON=ON \
+		-DENABLE_SSL=DARWIN -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_STATIC=ON ..
 		then
 			printf "\\tConfiguring MongoDB C driver has encountered the errors above.\\n"
 			printf "\\tExiting now.\\n\\n"
@@ -302,13 +343,13 @@
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.9.3"
+		if ! rm -rf "${TEMP_DIR}/mongo-c-driver-1.10.2"
 		then
-			printf "\\tUnable to remove directory %s/mongo-c-driver-1.9.3.\\n" "${TEMP_DIR}"
+			printf "\\tUnable to remove directory %s/mongo-c-driver-1.10.2.\\n" "${TEMP_DIR}"
 			printf "\\tExiting now.\\n\\n"
 			exit 1;
 		fi
-		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/stable --depth 1
+		if ! git clone https://github.com/mongodb/mongo-cxx-driver.git --branch releases/v3.3 --depth 1
 		then
 			printf "\\tUnable to clone MongoDB C++ driver at this time.\\n"
 			printf "\\tExiting now.\\n\\n"
