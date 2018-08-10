@@ -275,9 +275,9 @@
 
 
 	printf "\\n\\tTRAVELCHAIN has been successfully built. %02d:%02d:%02d\\n\\n" $(($TIME_END/3600)) $(($TIME_END%3600/60)) $(($TIME_END%60))
-	printf "\\tTo verify your installation run the following commands:\\n"
+	#printf "\\tTo verify your installation run the following commands:\\n"
 	
-	print_instructions
+	#print_instructions
 
 	printf "\\tFor more information:\\n"
 	printf "\\tTRAVELCHAIN website: https://travelchain.io\\n"
